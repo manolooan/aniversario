@@ -1,8 +1,6 @@
 const openLetterBtn = document.getElementById('open-letter-btn');
 const letterCard = document.getElementById('letter-card');
 const typedText = document.getElementById('typed-text');
-const musicBtn = document.getElementById('music-btn');
-const bgMusic = document.getElementById('bg-music');
 
 const countdownElements = {
   days: document.getElementById('days'),
@@ -15,12 +13,6 @@ const startGameBtn = document.getElementById('start-game-btn');
 const gameArea = document.getElementById('game-area');
 const scoreDisplay = document.getElementById('score');
 const gameMessage = document.getElementById('game-message');
-
-const prevPhotoBtn = document.getElementById('prev-photo');
-const nextPhotoBtn = document.getElementById('next-photo');
-const photoCards = [...document.querySelectorAll('.photo-card')];
-const dotsWrapper = document.getElementById('carousel-dots');
-const carousel = document.getElementById('carousel');
 
 let letterWritten = false;
 let score = 0;
