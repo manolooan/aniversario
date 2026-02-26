@@ -18,10 +18,6 @@ let letterWritten = false;
 let score = 0;
 let gameRunning = false;
 let gameInterval;
-let currentSlide = 0;
-let touchStartX = 0;
-let touchEndX = 0;
-let autoSlideInterval;
 
 const letterContent = `Meu amor,\n\nHoje eu celebro a sua vida com o coração cheio de gratidão.\nVocê ilumina meus dias com seu sorriso e transforma o comum em algo mágico.\n\nQue neste novo ciclo você receba tudo o que sonha e mereça.\nEu quero estar ao seu lado em cada passo, te amando e te admirando sempre.\n\nFeliz aniversário, minha pessoa favorita. Eu te amo infinitamente. 💚`;
 
@@ -32,36 +28,21 @@ function typeLetter(text, speed = 34) {
   const typing = setInterval(() => {
     typedText.textContent += text[index];
     index += 1;
-
-    if (index >= text.length) {
-      clearInterval(typing);
-    }
+    if (index >= text.length) clearInterval(typing);
   }, speed);
 }
 
-openLetterBtn.addEventListener('click', () => {
-  letterCard.classList.add('open');
-  letterCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+if (openLetterBtn && letterCard && typedText) {
+  openLetterBtn.addEventListener('click', () => {
+    letterCard.classList.add('open');
+    letterCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-  if (!letterWritten) {
-    typeLetter(letterContent);
-    letterWritten = true;
-  }
-});
-
-musicBtn.addEventListener('click', async () => {
-  try {
-    if (bgMusic.paused) {
-      await bgMusic.play();
-      musicBtn.textContent = 'Pausar música ⏸️';
-    } else {
-      bgMusic.pause();
-      musicBtn.textContent = 'Tocar música de fundo 🎵';
+    if (!letterWritten) {
+      typeLetter(letterContent);
+      letterWritten = true;
     }
-  } catch {
-    musicBtn.textContent = 'Toque para permitir áudio 🔊';
-  }
-});
+  });
+}
 
 function updateCountdown() {
   const targetDate = new Date('2027-02-26T00:00:00-03:00').getTime();
@@ -70,7 +51,7 @@ function updateCountdown() {
 
   if (difference <= 0) {
     Object.values(countdownElements).forEach((el) => {
-      el.textContent = '00';
+      if (el) el.textContent = '00';
     });
     return;
   }
@@ -79,10 +60,10 @@ function updateCountdown() {
   const hour = 1000 * 60 * 60;
   const minute = 1000 * 60;
 
-  countdownElements.days.textContent = String(Math.floor(difference / day)).padStart(2, '0');
-  countdownElements.hours.textContent = String(Math.floor((difference % day) / hour)).padStart(2, '0');
-  countdownElements.minutes.textContent = String(Math.floor((difference % hour) / minute)).padStart(2, '0');
-  countdownElements.seconds.textContent = String(Math.floor((difference % minute) / 1000)).padStart(2, '0');
+  if (countdownElements.days) countdownElements.days.textContent = String(Math.floor(difference / day)).padStart(2, '0');
+  if (countdownElements.hours) countdownElements.hours.textContent = String(Math.floor((difference % day) / hour)).padStart(2, '0');
+  if (countdownElements.minutes) countdownElements.minutes.textContent = String(Math.floor((difference % hour) / minute)).padStart(2, '0');
+  if (countdownElements.seconds) countdownElements.seconds.textContent = String(Math.floor((difference % minute) / 1000)).padStart(2, '0');
 }
 
 function createFloatingHeart(x, y) {
@@ -122,9 +103,7 @@ function spawnHeart() {
   heartBtn.style.top = `${Math.random() * maxY}px`;
 
   const removeHeart = () => {
-    if (heartBtn.parentNode) {
-      heartBtn.remove();
-    }
+    if (heartBtn.parentNode) heartBtn.remove();
   };
 
   heartBtn.addEventListener('click', () => {
@@ -148,93 +127,30 @@ function spawnHeart() {
   setTimeout(removeHeart, 2200);
 }
 
-startGameBtn.addEventListener('click', () => {
-  gameArea.innerHTML = '';
-  score = 0;
-  scoreDisplay.textContent = '0';
-  gameMessage.textContent = 'Vamos lá!';
-  gameRunning = true;
-  clearInterval(gameInterval);
-  gameInterval = setInterval(spawnHeart, 550);
-  spawnHeart();
-});
-
-const dots = photoCards.map((_, index) => {
-  const dot = document.createElement('button');
-  dot.className = 'dot';
-  dot.type = 'button';
-  dot.setAttribute('aria-label', `Ir para foto ${index + 1}`);
-  dot.addEventListener('click', () => showSlide(index));
-  dotsWrapper.appendChild(dot);
-  return dot;
-});
-
-function showSlide(index) {
-  if (index < 0) {
-    currentSlide = photoCards.length - 1;
-  } else if (index >= photoCards.length) {
-    currentSlide = 0;
-  } else {
-    currentSlide = index;
-  }
-
-  photoCards.forEach((card, cardIndex) => {
-    card.classList.toggle('active', cardIndex === currentSlide);
-  });
-
-  dots.forEach((dot, dotIndex) => {
-    dot.classList.toggle('active', dotIndex === currentSlide);
+if (startGameBtn && gameArea && scoreDisplay && gameMessage) {
+  startGameBtn.addEventListener('click', () => {
+    gameArea.innerHTML = '';
+    score = 0;
+    scoreDisplay.textContent = '0';
+    gameMessage.textContent = 'Vamos lá!';
+    gameRunning = true;
+    clearInterval(gameInterval);
+    gameInterval = setInterval(spawnHeart, 550);
+    spawnHeart();
   });
 }
-
-function resetAutoSlide() {
-  clearInterval(autoSlideInterval);
-  autoSlideInterval = setInterval(() => showSlide(currentSlide + 1), 5500);
-}
-
-prevPhotoBtn.addEventListener('click', () => {
-  showSlide(currentSlide - 1);
-  resetAutoSlide();
-});
-
-nextPhotoBtn.addEventListener('click', () => {
-  showSlide(currentSlide + 1);
-  resetAutoSlide();
-});
-
-carousel.addEventListener('touchstart', (event) => {
-  touchStartX = event.changedTouches[0].screenX;
-});
-
-carousel.addEventListener('touchend', (event) => {
-  touchEndX = event.changedTouches[0].screenX;
-  const delta = touchStartX - touchEndX;
-
-  if (Math.abs(delta) > 40) {
-    if (delta > 0) {
-      showSlide(currentSlide + 1);
-    } else {
-      showSlide(currentSlide - 1);
-    }
-    resetAutoSlide();
-  }
-});
 
 const observer = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  },
+  (entries) => entries.forEach((entry) => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  }),
   { threshold: 0.14 }
 );
 
 document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-document.getElementById('current-year').textContent = new Date().getFullYear();
 
-showSlide(0);
-resetAutoSlide();
+const yearEl = document.getElementById('current-year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
+
 updateCountdown();
 setInterval(updateCountdown, 1000);
